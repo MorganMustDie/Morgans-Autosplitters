@@ -149,7 +149,7 @@ init
     //These asl-help variables point to memory locations containing relevant battle information that we can piece together to work out what the most recent battle is
 	  vars.Helper["inBattle"] = mono.Make<bool>(battle, "instance", "inBattle"); //switches from 0 to 1 when in-game battle UI is active
 	  vars.Helper["battleSceneName"] = mono.MakeString(battle, "instance", "battleArena", "sceneName"); //name of the scene a battle takes place in
-	  vars.Helper["battleSceneID"] = mono.Make<int>(battle, "instance", "battleArena", "sceneID"); //ID of battle, not completely unique for each battle is unique to each scene
+	  vars.Helper["battleSceneID"] = mono.Make<int>(battle, "instance", "battleArena", "sceneID"); //ID of battle - not completely unique, but each ID only appears once in a given scene
     print("Successfully loaded Battle info");
 
     //BOOLEANS
