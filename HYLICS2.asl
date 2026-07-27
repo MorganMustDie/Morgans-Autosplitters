@@ -167,8 +167,9 @@ init
     vars.Helper["gesturesArray"] = mono.Make<IntPtr>(gh, "instance", "playerHandler", "playerGroup", 0x14, 0x10, 0x10, 0x10);
     print("Successfully loaded gesturesArray");
 
-    //The names of triggers are stored in here once checked, so they you can't split on the same trigger twice in a run
+    //Trigger is the key phrase we check for to see if in-game events are tied to splits. The names of triggers are stored once checked, so you can't split on the same trigger twice in a run
     //Handy when things like save/load spam accidentally read the same variables or pickups twice, but does mean you'll have to manually split if a split is triggered by mistake. I'm working on it.
+    vars.trigger = "";
     vars.triggersChecked = new List<string>();
 
     return true;
@@ -183,8 +184,8 @@ update
     //Create a bossKey out of the battle scene name and ID and check if that battle is contained in the boss dictionary
     vars.bossKey = Tuple.Create(current.battleSceneName.ToString(), current.battleSceneID);
     if(vars.bosses.ContainsKey(vars.bossKey)){
-      vars.boss = vars.bosses[vars.bossKey]; //We use the boss' name as the trigger input to our splits
-      print("You are fighting " + vars.boss);
+      vars.trigger = vars.bosses[vars.bossKey];
+      print("You are fighting " + vars.trigger);
     }else{
       vars.boss = "";
       print("There is no split associated with this encounter.");
@@ -193,22 +194,42 @@ update
 
   //Check how long the game's boolean dictionary is
   current.BoolsCount = vars.Helper.Read<int>(current.boolVars + 0x20);
+  if(old.BoolsCount != current.BoolsCount){ //New boolean detected!
+    vars.trigger = vars.Helper.ReadString(current.boolVars + 0x10, 0x10 + 0x4 * (current.BoolsCount - 1));
+    print("New boolean added to dictionary: " + vars.trigger);
+  }
+
 
   //Check how many gestures have been unlocked
   current.GesturesCount = vars.Helper.Read<int>(current.gesturesArray + 0xC);
+  if(old.GesturesCount != current.GesturesCount){ //New gesture detected!
+    var gesture = vars.Helper.Read<int>(current.gesturesArray + 0x8, 0x10 + 0x04 * (current.GesturesCount - 1));
+    print("New gesture learned, ID #:" + gesture);
+    if(vars.gestures.ContainsKey(gesture)){
+      vars.trigger = vars.gestures[gesture];
+      print("You learned " + vars.trigger);
+    }else{
+      print(gesture + " is not a valid gesture ID");
+    }
+  }
 
   //Check how long the game's object dictionary is
   current.ObjectsCount = vars.Helper.Read<int>(current.objectVars + 0x20);
   if(old.ObjectsCount != current.ObjectsCount){
     var newestObject = vars.Helper.ReadString(current.objectVars + 0x10, 0x10 + 0x4 * (current.ObjectsCount - 1));
     print("New object added to dictionary: " + newestObject);
+    
     //If Ending button loads in
     if(newestObject == "7db159ea-e4f0-470c-aa6b-80a34042ab09"){
       vars.endButtonLocation = current.ObjectsCount - 1;
       print("Ending button loaded in at: " + vars.endButtonLocation);
+      var endSplit = vars.Helper.Read<bool>(current.objectVars + 0x14, 0x10 + 0x4 * (vars.endButtonLocation), 0xC, 0x14, 0x10); //The location of the ending button's pressed status
+      if(endSplit){
+        print("End button pressed!");
+        vars.trigger = "End";
+      }
     }
   }
-
 }
 
 start
@@ -245,9 +266,6 @@ exit
 
 split
 {
-  //trigger is the input variable we use to check our split dictionary.
-  vars.trigger = "";
-
   //End of battle splits
   if(old.inBattle & !current.inBattle){ //Battle is over
     //If all battles ticked
@@ -262,42 +280,6 @@ split
       }else{
         return true;
       }
-    }else{
-      //if specific battles ticked
-      if(vars.bosses.ContainsKey(vars.bossKey)){
-        //Set trigger to name of boss just defeated
-        vars.trigger = vars.bosses[vars.bossKey];
-      }
-    }
-  }
-
-  //Boolean variable changes
-  if(old.BoolsCount != current.BoolsCount){
-    var key = vars.Helper.ReadString(current.boolVars + 0x10, 0x10 + 0x4 * (current.BoolsCount - 1));
-    print("New boolean added to dictionary: " + key);
-    //Set trigger to the in-game name of the boolean we've just activated
-    vars.trigger = key;
-  }
-
-  //Gestures array updates
-  if(old.GesturesCount != current.GesturesCount){
-    var gesture = vars.Helper.Read<int>(current.gesturesArray + 0x8, 0x10 + 0x04 * (current.GesturesCount - 1));
-    print("New gesture learned, ID #:" + gesture);
-    if(vars.gestures.ContainsKey(gesture)){
-      print("You learned " + vars.gestures[gesture]);
-      vars.trigger = vars.gestures[gesture];
-    }else{
-      print(gesture + " is not a valid gesture ID");
-    }
-  }
-
-  //Ending Split
-  if(vars.endButtonLocation != 0){ //Once the end button is loaded in, keep track of it's pressed status
-    //Pressed status found at this address
-    var endSplit = vars.Helper.Read<bool>(current.objectVars + 0x14, 0x10 + 0x4 * (vars.endButtonLocation), 0xC, 0x14, 0x10);
-    if(endSplit){
-      print("End button pressed!");
-      vars.trigger = "End";
     }
   }
 
@@ -312,13 +294,16 @@ split
         print("You have triggered the following splits:");
         foreach(string settingId in settingIds){
           print("Setting " + settingId + " is " + settings[settingId]);
+          vars.trigger = "";
           if (settings[settingId]) return true;
         }
       }else{
         print("This trigger has already been split.");
+        vars.trigger = "";
       }
     }else{
       print("This trigger is not associated with any splits.");
+      vars.trigger = "";
     }
   }
 }
