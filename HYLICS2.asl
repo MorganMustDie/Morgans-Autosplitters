@@ -21,7 +21,7 @@ startup
 
   //BATTLES
   //All fights are uniquely defined by the name of the scene they occur in and their ID within that scene, which will print in DebugView whenever you enter a battle.
-  //These are the specific scene name/ID pairings for boss fights and significant encounters that I considered significant. This dictionary isn't strictly necessary, but I found it much nicer to
+  //These are the specific scene name/ID pairings for boss fights and encounters that I considered significant. This dictionary isn't strictly necessary, but I found it much nicer to
   //refer to fights by a recognisable name than by their scene name and ID.
   vars.bosses = new Dictionary<Tuple<string, int>, string>
   {
@@ -144,8 +144,6 @@ init
   	var battle = mono["ORKFramework", "Battle"];
     var gh = mono["ORKFramework", "GameHandler"];
     print("Successfully loaded Battle and GameHandler");
-
-    //Remember our three split types from earlier - BATTLES, BOOLEANS and BUTTONS? Here's where those come back.
 
     //BATTLES
     //These asl-help variables point to memory locations containing relevant battle information that we can piece together to work out what the most recent battle is
