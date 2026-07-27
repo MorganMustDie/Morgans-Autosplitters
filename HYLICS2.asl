@@ -163,11 +163,12 @@ init
     vars.endButtonLocation = 0;
     print("Successfully loaded boolVars");
 
+	//This points to the list of gestures the player has learned. Specifically, the list is of the gesture IDs, which we convert back into the gesture name with the dictionary above
     vars.Helper["gesturesArray"] = mono.Make<IntPtr>(gh, "instance", "playerHandler", "playerGroup", 0x14, 0x10, 0x10, 0x10);
     print("Successfully loaded gesturesArray");
 
     //The names of triggers are stored in here once checked, so they you can't split on the same trigger twice in a run
-    //Handy when things like save/load spam accidentally read the same variables or pickups twice
+    //Handy when things like save/load spam accidentally read the same variables or pickups twice, but does mean you'll have to manually split if a split is triggered by mistake. I'm working on it.
     vars.triggersChecked = new List<string>();
 
     return true;
