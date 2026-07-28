@@ -172,6 +172,9 @@ init
     vars.trigger = "";
     vars.triggersChecked = new List<string>();
 
+    vars.endButtonLoaded = false;
+    vars.endSplit = false;
+
     return true;
   });
 }
@@ -184,11 +187,17 @@ update
     //Create a bossKey out of the battle scene name and ID and check if that battle is contained in the boss dictionary
     vars.bossKey = Tuple.Create(current.battleSceneName.ToString(), current.battleSceneID);
     if(vars.bosses.ContainsKey(vars.bossKey)){
-      vars.trigger = vars.bosses[vars.bossKey];
-      print("You are fighting " + vars.trigger);
+      vars.bossname = vars.bosses[vars.bossKey];
+      print("You are fighting " + vars.bossname);
     }else{
       vars.boss = "";
       print("There is no split associated with this encounter.");
+    }
+  }
+
+  if(!current.inBattle & old.inBattle){
+    if(vars.bosses.ContainsKey(vars.bossKey)){
+      vars.trigger = vars.bossname;
     }
   }
 
@@ -223,11 +232,16 @@ update
     if(newestObject == "7db159ea-e4f0-470c-aa6b-80a34042ab09"){
       vars.endButtonLocation = current.ObjectsCount - 1;
       print("Ending button loaded in at: " + vars.endButtonLocation);
-      var endSplit = vars.Helper.Read<bool>(current.objectVars + 0x14, 0x10 + 0x4 * (vars.endButtonLocation), 0xC, 0x14, 0x10); //The location of the ending button's pressed status
-      if(endSplit){
-        print("End button pressed!");
-        vars.trigger = "End";
-      }
+      vars.endButtonLoaded = true;
+      print("endSplit: " + vars.endSplit);
+    }
+  }
+
+  if(vars.endButtonLoaded){
+    vars.endSplit = vars.Helper.Read<bool>(current.objectVars + 0x14, 0x10 + 0x4 * (vars.endButtonLocation), 0xC, 0x14, 0x10); //The location of the ending button's pressed status
+    if(vars.endSplit){
+      print("End button pressed!");
+      vars.trigger = "End";
     }
   }
 }
