@@ -42,6 +42,7 @@ startup
   addSetting("paintings_10",    "10 Paintings",      "paint10",    "Complete 10 paintings");
   addSetting("paintings_20",    "20 Paintings",      "paint20",    "Complete 20 paintings");
   addSetting("paintings_30",    "30 Paintings",      "paint30",    "Complete 30 paintings");
+  addSetting("paintings_40",    "40 Paintings",      "paint40",    "Complete 40 paintings");
   addSetting("paintings_50",    "50 Paintings",      "paint50",    "Complete 50 paintings");
   addSetting("paintings_60",    "60 Paintings",      "paint60",    "Complete 60 paintings");
   addSetting("paintings_70",    "70 Paintings",      "paint10",    "Complete 70 paintings");
