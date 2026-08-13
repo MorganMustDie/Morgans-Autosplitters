@@ -13,7 +13,6 @@ startup
 {
   //https://github.com/ero-qt/asl-help
   Assembly.Load(File.ReadAllBytes("Components/asl-help")).CreateInstance("Unity");
-  vars.Helper.LoadSceneManager = true;
 
   //I've set this up so any fight you want to split on can be made a split, and any boolean variable change (so long as Hylics 2 keeps track of it) can be made into a split.
   //I'm also tracking gestures and the state of the end game button. Other things, like scene changes or item pickups, are theoretically possible but would need to have their memory addresses hunted down.
@@ -275,7 +274,7 @@ reset
 
 exit
 {
-  vars.gameClosed = true;
+  print("Hylics 2 exited!");
 }
 
 split
@@ -298,26 +297,31 @@ split
   }
 
   //Regardless of what kind of event we've just activated, the trigger variable should now be set to something noteworthy. 
-  if(vars.trigger != ""){
-    print("Checking trigger: " + vars.trigger);
-    //Check if there are any splits in our dictionary with an accompanying trigger phrase and split if the answer is yes
-    if (vars.splits.ContainsKey(vars.trigger)){
-      if(!vars.triggersChecked.Contains(vars.trigger)){
-        vars.triggersChecked.Add(vars.trigger);
-        List<string> settingIds = vars.splits[vars.trigger];
-        print("You have triggered the following splits:");
-        foreach(string settingId in settingIds){
-          print("Setting " + settingId + " is " + settings[settingId]);
+  if(vars.trigger == null){
+    print("Trigger is null!");
+    vars.trigger = "";
+  }else{
+    if(vars.trigger != ""){
+      print("Checking trigger: " + vars.trigger);
+      //Check if there are any splits in our dictionary with an accompanying trigger phrase and split if the answer is yes
+      if (vars.splits.ContainsKey(vars.trigger)){
+        if(!vars.triggersChecked.Contains(vars.trigger)){
+          vars.triggersChecked.Add(vars.trigger);
+          List<string> settingIds = vars.splits[vars.trigger];
+          print("You have triggered the following splits:");
+          foreach(string settingId in settingIds){
+            print("Setting " + settingId + " is " + settings[settingId]);
+            vars.trigger = "";
+            if (settings[settingId]) return true;
+          }
+        }else{
+          print("This trigger has already been split.");
           vars.trigger = "";
-          if (settings[settingId]) return true;
         }
       }else{
-        print("This trigger has already been split.");
+        print("This trigger is not associated with any splits.");
         vars.trigger = "";
       }
-    }else{
-      print("This trigger is not associated with any splits.");
-      vars.trigger = "";
     }
   }
 }
